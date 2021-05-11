@@ -76,7 +76,7 @@ void ompl::geometric::RRTDof::setup()
 
     if (!nn_)
         nn_.reset(tools::SelfConfig::getDefaultNearestNeighbors<Motion *>(this));
-    nn_->setDistanceFunction([this](const Motion *a, const Motion *b) { return distanceFunction(a, b); });
+    nn_->setDistanceFunction([this](const Motion *a, const Motion *b) { return distanceFunctionWithAtt(a, b); });
 }
 
 void ompl::geometric::RRTDof::freeMemory()
@@ -145,6 +145,7 @@ ompl::base::PlannerStatus ompl::geometric::RRTDof::solve(const base::PlannerTerm
         // if (toProject) {
         //     projectWithAtt(rstate, nmotion->state);
         // }
+        // projectWithAtt(rstate, nmotion->state);
 
         /* find state to add */
         double d = si_->distance(nmotion->state, rstate);
@@ -264,4 +265,13 @@ void ompl::geometric::RRTDof::getPlannerData(base::PlannerData &data) const
 
 void ompl::geometric::RRTDof::projectWithAtt(ompl::base::State* pSampledState, const ompl::base::State* pNearState) {
     sampler_->sampleUniformNear(pSampledState, pNearState, 0.0);
+}
+
+double ompl::geometric::RRTDof::distanceFunctionWithAtt(const Motion *a, const Motion *b) const {
+    auto* pMotion = new Motion(si_);
+    si_->copyState(pMotion->state, b->state);
+    sampler_->sampleUniformNear(pMotion->state, a->state, 0.0);
+    double dist = si_->distance(a->state, pMotion->state);
+    delete pMotion;
+    return dist;
 }

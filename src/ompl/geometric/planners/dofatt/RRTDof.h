@@ -172,6 +172,8 @@ namespace ompl
                 return si_->distance(a->state, b->state);
             }
 
+            double distanceFunctionWithAtt(const Motion *a, const Motion *b) const;
+
             /** \brief State sampler */
             base::StateSamplerPtr sampler_;
 
