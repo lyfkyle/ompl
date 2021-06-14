@@ -76,7 +76,7 @@ void ompl::geometric::RRTDof::setup()
 
     if (!nn_)
         nn_.reset(tools::SelfConfig::getDefaultNearestNeighbors<Motion *>(this));
-    nn_->setDistanceFunction([this](const Motion *a, const Motion *b) { return distanceFunctionWithAtt(a, b); });
+    nn_->setDistanceFunction([this](const Motion *a, const Motion *b) { return distanceFunction(a, b); });
 }
 
 void ompl::geometric::RRTDof::freeMemory()
@@ -129,8 +129,10 @@ ompl::base::PlannerStatus ompl::geometric::RRTDof::solve(const base::PlannerTerm
     while (!ptc)
     {
         /* sample random state (with goal biasing) */
-        if ((goal_s != nullptr) && rng_.uniform01() < goalBias_ && goal_s->canSample())
+        if ((goal_s != nullptr) && rng_.uniform01() < goalBias_ && goal_s->canSample()) {
             goal_s->sampleGoal(rstate);
+            toProject = false;
+        } 
         else {
             sampler_->sampleUniform(rstate);
             // Motion *nmotion = nn_->nearest(rmotion);
