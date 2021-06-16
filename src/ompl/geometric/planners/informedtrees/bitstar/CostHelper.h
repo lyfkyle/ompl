@@ -320,7 +320,8 @@ namespace ompl
             };
             inline ompl::base::Cost motionCostHeuristic(const ompl::base::State *a, const ompl::base::State *b) const
             {
-                return opt_->motionCostHeuristic(a, b);
+                // return opt_->motionCostHeuristic(a, b);
+                return ompl::base::Cost(0.0);
             };
             inline ompl::base::Cost motionCost(const ompl::base::State *a, const ompl::base::State *b) const
             {
