@@ -585,6 +585,7 @@ namespace ompl
                 {
                     // Take the better of the min cost so far and the cost-to-go from this start
                     minCost_ = costHelpPtr_->betterCost(minCost_, costHelpPtr_->costToGoHeuristic(startVertex));
+                    // std::cout << "here!!" << std::endl;
                 }
 
                 // If we have at least one start and goal, allocate a sampler
@@ -620,7 +621,7 @@ namespace ompl
 
             // Set the cost sampled to the minimum
             sampledCost_ = minCost_;
-
+            // std::cout << "addNewSamples : " << sampledCost_.value() << std::endl;
             // Store the number of samples being used in this batch
             numNewSamplesInCurrentBatch_ = numSamples;
 
@@ -925,6 +926,13 @@ namespace ompl
         {
             // The required cost to contain the neighbourhood of this vertex.
             ompl::base::Cost requiredCost = this->calculateNeighbourhoodCost(vertex);
+            // static int firstTime = 0;
+            // if (firstTime < 4) {
+                // std::cout << "required cost " << requiredCost.value() << std::endl;
+                // std::cout << "sampledCost_ " << sampledCost_.value() << std::endl;
+            //     firstTime += 1;
+            // }
+
 
             // Check if we need to generate new samples inorder to completely cover the neighbourhood of the vertex
             if (costHelpPtr_->isCostBetterThan(sampledCost_, requiredCost))
@@ -959,6 +967,13 @@ namespace ompl
                     // We're generating all our samples in one batch. Do it to it.
                     numRequiredSamples = numSamples_ + numNewSamplesInCurrentBatch_;
                 }
+
+                // if (!firstTime) {
+                //     std::cout << "required cost " << requiredCost.value() << std::endl;
+                //     std::cout << "sampledCost_ " << sampledCost_.value() << std::endl;
+                // }
+
+                // std::cout << "numRequiredSamples " << numRequiredSamples << std::endl;
 
                 // Actually generate the new samples
                 VertexPtrVector newStates{};
@@ -995,8 +1010,14 @@ namespace ompl
                 // Add the new state as a sample.
                 this->addToSamples(newStates);
 
+                // if (firstTime < 4) {
+                //     std::cout << "required cost " << requiredCost.value() << std::endl;
+                //     std::cout << "sampledCost_ " << sampledCost_.value() << std::endl;
+                // }
                 // Record the sampled cost space
                 sampledCost_ = requiredCost;
+
+                // firstTime = 1;
             }
             // No else, the samples are up to date
         }

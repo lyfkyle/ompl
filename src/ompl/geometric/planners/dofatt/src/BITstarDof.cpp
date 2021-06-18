@@ -550,6 +550,7 @@ namespace ompl
                     {
                         edge.first->registerExpansion();
                     }
+                    // std::cout << "adding existing edge" << std::endl;
                     queuePtr_->insertOutgoingEdges(edge.second);
                 }
                 // In the best case, can this edge improve our solution given the current graph?
@@ -558,11 +559,13 @@ namespace ompl
                              costHelpPtr_->inflateCost(costHelpPtr_->currentHeuristicEdge(edge), truncationFactor_),
                              bestCost_))
                 {
+                    // std::cout << "here1" << std::endl;
                     // What about improving the current graph?
                     // g_t(v) + c_hat(v,x)  < g_t(x)?
                     if (costHelpPtr_->isCostBetterThan(costHelpPtr_->currentHeuristicToTarget(edge),
                                                        edge.second->getCost()))
                     {
+                        // std::cout << "here2" << std::endl;
                         // Ok, so it *could* be a useful edge. Do the work of calculating its cost for real
 
                         // Get the true cost of the edge
@@ -575,9 +578,11 @@ namespace ompl
                                                            costHelpPtr_->costToGoHeuristic(edge.second)),
                                 bestCost_))
                         {
+                            // std::cout << "here3" << std::endl;
                             // Does this edge have a collision?
                             if (this->checkEdge(edge))
                             {
+                                // std::cout << "here4" << std::endl;
                                 // Remember that this edge has passed the collision checks.
                                 this->whitelistEdge(edge);
 
@@ -591,6 +596,7 @@ namespace ompl
                                     // not currently connected and otherwise propagate cost updates to descendants.
                                     // addEdge will update the queue and handle the extra work that occurs if this edge
                                     // improves the solution.
+                                    // std::cout << "adding a good edge" << std::endl;
                                     this->addEdge(edge, trueEdgeCost);
 
                                     // If the path to the goal has changed, we will need to update the cached info about

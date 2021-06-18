@@ -388,6 +388,10 @@ namespace ompl
             /** \brief The samples as a nearest-neighbours datastructure. Sorted by nnDistance. */
             VertexPtrNNPtr samples_{nullptr};
 
+            VertexPtrNNPtr projectedSamples_{nullptr};
+
+            VertexPtrVector origSamples_;
+
             /** \brief A copy of the vertices recycled into samples during the most recently added batch. */
             VertexPtrVector recycledSamples_;
 

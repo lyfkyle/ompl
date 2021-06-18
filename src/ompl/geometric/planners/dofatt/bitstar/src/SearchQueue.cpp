@@ -141,6 +141,7 @@ namespace ompl
         {
             ASSERT_SETUP
 
+            // std::cout << "enqueueEdge" << std::endl;
             // Create convenience aliases.
             const VertexPtr &parent = edge.first;
             const VertexPtr &child = edge.second;
@@ -354,6 +355,7 @@ namespace ompl
                     throw ompl::Exception("Inserting outgoing edges of a pruned start vertex.");
                 }
 #endif  // BITSTAR_DEBUG
+                // std::cout << "insertOutgoingEdgesOfStartVertices" << std::endl;
                 this->insertOutgoingEdges(*it);
             }
         }

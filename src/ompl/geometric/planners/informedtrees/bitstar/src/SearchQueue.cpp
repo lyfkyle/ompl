@@ -354,6 +354,7 @@ namespace ompl
                     throw ompl::Exception("Inserting outgoing edges of a pruned start vertex.");
                 }
 #endif  // BITSTAR_DEBUG
+                // std::cout << "insertOutgoingEdgesOfStartVertices" << std::endl;
                 this->insertOutgoingEdges(*it);
             }
         }
@@ -458,8 +459,15 @@ namespace ompl
             }
 #endif  // BITSTAR_DEBUG
         // Should we expand this vertex?
+            // std::cout << "insertOutgoingEdges" << std::endl;
             if (this->canPossiblyImproveCurrentSolution(vertex))
             {
+                static int firstTime = 0;
+                if (firstTime < 4) {
+                    // std::cout << "insertOutgoingEdges" << std::endl;
+                    firstTime += 1;
+                }
+
                 // Get the neighbouring samples.
                 VertexPtrVector neighbourSamples;
                 graphPtr_->nearestSamples(vertex, &neighbourSamples);
@@ -482,6 +490,7 @@ namespace ompl
                                           "vertex that has been pruned.");
                 }
 #endif  // BITSTAR_DEBUG
+                // std::cout << "insertOutgoingEdgesOfInconsistentVertices" << std::endl;
                 this->insertOutgoingEdges(vertex);
             }
         }

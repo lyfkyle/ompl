@@ -114,12 +114,18 @@ namespace ompl
             {
                 samples_.reset(ompl::tools::SelfConfig::getDefaultNearestNeighbors<VertexPtr>(plannerPtr));
             }
+            if (!static_cast<bool>(projectedSamples_))
+            {
+                projectedSamples_.reset(ompl::tools::SelfConfig::getDefaultNearestNeighbors<VertexPtr>(plannerPtr));
+            }
+
             // No else, already allocated (by a call to setNearestNeighbors())
 
             // Configure:
             NearestNeighbors<VertexPtr>::DistanceFunction distanceFunction(
                 [this](const VertexConstPtr &a, const VertexConstPtr &b) { return distance(a, b); });
             samples_->setDistanceFunction(distanceFunction);
+            projectedSamples_->setDistanceFunction(distanceFunction);
 
             // Set the min, max and sampled cost to the proper objective-based values:
             minCost_ = costHelpPtr_->infiniteCost();
@@ -319,7 +325,9 @@ namespace ompl
             }
             else
             {
-                samples_->nearestR(vertex, r_, *neighbourSamples);
+                // samples_->nearestR(vertex, r_, *neighbourSamples);
+                projectedSamples_->nearestR(vertex, r_, *neighbourSamples);
+                projectedSamples_->clear();
             }
         }
 
@@ -588,6 +596,7 @@ namespace ompl
                 {
                     // Take the better of the min cost so far and the cost-to-go from this start
                     minCost_ = costHelpPtr_->betterCost(minCost_, costHelpPtr_->costToGoHeuristic(startVertex));
+                    // std::cout << "here!!" << minCost_.value() << std::endl;
                 }
 
                 // If we have at least one start and goal, allocate a sampler
@@ -623,6 +632,7 @@ namespace ompl
 
             // Set the cost sampled to the minimum
             sampledCost_ = minCost_;
+            // std::cout << "addNewSamples : " << sampledCost_.value() << std::endl;
 
             // Store the number of samples being used in this batch
             numNewSamplesInCurrentBatch_ = numSamples;
@@ -928,6 +938,12 @@ namespace ompl
         {
             // The required cost to contain the neighbourhood of this vertex.
             ompl::base::Cost requiredCost = this->calculateNeighbourhoodCost(vertex);
+            // static int firstTime = 0;
+            // if (firstTime < 4) {
+            //     std::cout << "required cost " << requiredCost.value() << std::endl;
+            //     std::cout << "sampledCost_ " << sampledCost_.value() << std::endl;
+            //     firstTime += 1;
+            // }
 
             // Check if we need to generate new samples inorder to completely cover the neighbourhood of the vertex
             if (costHelpPtr_->isCostBetterThan(sampledCost_, requiredCost))
@@ -963,6 +979,8 @@ namespace ompl
                     numRequiredSamples = numSamples_ + numNewSamplesInCurrentBatch_;
                 }
 
+                // std::cout << "numRequiredSamples " << numRequiredSamples << std::endl;
+
                 // Actually generate the new samples
                 VertexPtrVector newStates{};
                 newStates.reserve(numRequiredSamples);
@@ -979,13 +997,14 @@ namespace ompl
                     // Sample in the interval [costSampled_, costReqd):
                     if (sampler_->sampleUniform(newState->state(), sampledCost_, requiredCost))
                     {
-                        // perform dofAtt
-                        sampler2_->sampleUniformNear(newState->state(), vertex->state(), 0.0);
+                        // // perform dofAtt
+                        // sampler2_->sampleUniformNear(newState->state(), vertex->state(), 0.0);
 
                         // If the state is collision free, add it to the set of free states
                         ++numStateCollisionChecks_;
                         if (spaceInformation_->isValid(newState->state()))
                         {
+                            // std::cout << "new state is collision free" << std::endl;
                             newStates.push_back(newState);
 
                             // Update the number of uniformly distributed states
@@ -1005,6 +1024,26 @@ namespace ompl
                 sampledCost_ = requiredCost;
             }
             // No else, the samples are up to date
+
+            // dofAtt
+            VertexPtrVector samples;
+            samples_->list(samples);
+
+            for (auto sample : samples) {
+                auto projectedSample =
+                    std::make_shared<Vertex>(spaceInformation_, costHelpPtr_, queuePtr_, approximationId_);
+                spaceInformation_->copyState(projectedSample->state(), sample->state());
+                sampler2_->sampleUniformNear(projectedSample->state(), vertex->state(), 0.0);
+
+                // Add to the vector of new samples
+                // newSamples_.push_back(sample);
+
+                // Add to the NN structure:
+                projectedSamples_->add(projectedSample);
+            }
+            for (auto goalVertex : goalVertices_) {
+                projectedSamples_->add(goalVertex);   
+            }
         }
 
         void BITstarDof::ImplicitGraph::updateVertexClosestToGoal()

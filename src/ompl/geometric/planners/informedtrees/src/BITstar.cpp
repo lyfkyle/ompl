@@ -591,6 +591,7 @@ namespace ompl
                                     // not currently connected and otherwise propagate cost updates to descendants.
                                     // addEdge will update the queue and handle the extra work that occurs if this edge
                                     // improves the solution.
+                                    // std::cout << "adding good edge" << std::endl;
                                     this->addEdge(edge, trueEdgeCost);
 
                                     // If the path to the goal has changed, we will need to update the cached info about
