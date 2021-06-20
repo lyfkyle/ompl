@@ -117,6 +117,7 @@ namespace ompl
           , costAtExpansion_(costHelpPtr_->infiniteCost())
           , currentSearchId_(queuePtr->getSearchId())
           , currentApproximationId_(approximationId)
+          , isGoal_(false)
         {
             PRINT_VERTEX_CHANGE
 

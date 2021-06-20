@@ -37,6 +37,8 @@
 #ifndef OMPL_GEOMETRIC_PLANNERS_INFORMEDTREES_BITSTARDOF_IMPLICITGRAPH_
 #define OMPL_GEOMETRIC_PLANNERS_INFORMEDTREES_BITSTARDOF_IMPLICITGRAPH_
 
+#include <unordered_map>
+
 #include "ompl/base/Cost.h"
 #include "ompl/base/OptimizationObjective.h"
 #include "ompl/datastructures/NearestNeighbors.h"
@@ -271,6 +273,8 @@ namespace ompl
              * The check should always be g^(v) + h^(v) >= g_t(x_g). */
             bool canSampleBePruned(const VertexPtr &sample) const;
 
+            bool checkProjectionUsed(const VertexPtr& vertex);
+
         private:
             // ---
             // High-level primitives updating the graph.
@@ -391,6 +395,8 @@ namespace ompl
             VertexPtrNNPtr projectedSamples_{nullptr};
 
             VertexPtrVector origSamples_;
+
+            std::unordered_map<unsigned int, VertexPtr> projectMap_;
 
             /** \brief A copy of the vertices recycled into samples during the most recently added batch. */
             VertexPtrVector recycledSamples_;

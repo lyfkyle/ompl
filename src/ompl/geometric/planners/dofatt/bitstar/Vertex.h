@@ -239,6 +239,9 @@ namespace ompl
             /** \brief Clear the pointers to all of the outgoing edge queue entries. */
             void clearEdgeQueueOutLookup();
 
+            bool isGoal_;
+            bool projectionUsed_ = false;
+
         private:
             // ---
             // Internal bookkeeping.

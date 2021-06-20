@@ -228,6 +228,11 @@ namespace ompl
                 samples_->clear();
                 samples_.reset();
             }
+            if (static_cast<bool>(projectedSamples_))
+            {
+                projectedSamples_->clear();
+                projectedSamples_.reset();
+            }
             // No else, not allocated
 
             // The various calculations and tracked values, same as in the header
@@ -321,10 +326,14 @@ namespace ompl
 
             if (useKNearest_)
             {
-                samples_->nearestK(vertex, k_, *neighbourSamples);
+                // std::cout << "useNearestK " << std::endl;
+                // samples_->nearestK(vertex, k_, *neighbourSamples);
+                projectedSamples_->nearestK(vertex, k_, *neighbourSamples);
+                projectedSamples_->clear();
             }
             else
             {
+                // std::cout << "useNearestR " << std::endl;
                 // samples_->nearestR(vertex, r_, *neighbourSamples);
                 projectedSamples_->nearestR(vertex, r_, *neighbourSamples);
                 projectedSamples_->clear();
@@ -423,6 +432,8 @@ namespace ompl
 
                     // Copy the value into the state
                     spaceInformation_->copyState(goalVertices_.back()->state(), newGoal);
+
+                    goalVertices_.back()->isGoal_ = true;
 
                     // And add this goal to the set of samples:
                     this->addToSamples(goalVertices_.back());
@@ -761,6 +772,15 @@ namespace ompl
             recycledSamples_.push_back(sample);
         }
 
+        bool BITstarDof::ImplicitGraph::checkProjectionUsed(const VertexPtr& vertex)
+        {
+            bool res = false;
+            if (projectMap_.find(vertex->getId()) != projectMap_.end()) {
+                res = projectMap_[vertex->getId()]->projectionUsed_;
+            }
+            return res || vertex->projectionUsed_;
+        }
+
         void BITstarDof::ImplicitGraph::registerAsVertex(const VertexPtr &vertex)
         {
             ASSERT_SETUP
@@ -780,6 +800,19 @@ namespace ompl
             if (!hasExactSolution_ && findApprox_)
             {
                 this->testClosestToGoal(vertex);
+            }
+
+            if (projectMap_.find(vertex->getId()) != projectMap_.end()) {
+                // VertexPtr origVertexCopy(projectMap_[vertex->getId()]);
+                // std::cout << "haha: samples size: " << samples_->size() << std::endl;
+                // std::cout << "haha: vertex id: " << vertex->getId() << " orig sample id : " << projectMap_[vertex->getId()]->getId() << std::endl;
+                projectMap_[vertex->getId()]->projectionUsed_ = true;
+                this->pruneSample(projectMap_[vertex->getId()]);
+                // bool res = samples_->remove(origVertexCopy);
+                // std::cout << "haha: samples size: " << samples_->size() << std::endl;
+                vertex->projectionUsed_ = true;
+                this->addToSamples(vertex);
+                // std::cout << "haha: samples size: " << samples_->size() << std::endl;
             }
         }
 
@@ -938,7 +971,7 @@ namespace ompl
         {
             // The required cost to contain the neighbourhood of this vertex.
             ompl::base::Cost requiredCost = this->calculateNeighbourhoodCost(vertex);
-            // static int firstTime = 0;
+            static int firstTime = 0;
             // if (firstTime < 4) {
             //     std::cout << "required cost " << requiredCost.value() << std::endl;
             //     std::cout << "sampledCost_ " << sampledCost_.value() << std::endl;
@@ -1028,13 +1061,21 @@ namespace ompl
             // dofAtt
             VertexPtrVector samples;
             samples_->list(samples);
+            projectedSamples_->clear();
+            
+            // std::cout << "samples size " << samples_->size() << std::endl;
 
             for (auto sample : samples) {
+                if (sample->isGoal_ || sample->isRoot() || sample->projectionUsed_) {
+                    continue;
+                }
                 auto projectedSample =
                     std::make_shared<Vertex>(spaceInformation_, costHelpPtr_, queuePtr_, approximationId_);
                 spaceInformation_->copyState(projectedSample->state(), sample->state());
                 sampler2_->sampleUniformNear(projectedSample->state(), vertex->state(), 0.0);
-
+                
+                projectMap_[projectedSample->getId()] = sample;
+                // std::cout << "projectedSample id : " << projectedSample->getId() << " orig sample id : " << sample->getId() << std::endl;
                 // Add to the vector of new samples
                 // newSamples_.push_back(sample);
 
@@ -1044,6 +1085,10 @@ namespace ompl
             for (auto goalVertex : goalVertices_) {
                 projectedSamples_->add(goalVertex);   
             }
+
+            VertexPtrVector projectedSamples;
+            // projectedSamples_->list(projectedSamples);
+            // std::cout << "samples size " << projectedSamples_->size() << std::endl;
         }
 
         void BITstarDof::ImplicitGraph::updateVertexClosestToGoal()

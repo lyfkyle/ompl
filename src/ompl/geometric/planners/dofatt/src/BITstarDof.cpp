@@ -543,8 +543,11 @@ namespace ompl
                 // Get the most promising edge.
                 VertexPtrPair edge = queuePtr_->popFrontEdge();
 
+                if (graphPtr_->checkProjectionUsed(edge.second)) {
+                    ;
+                }
                 // If this edge is already part of the search tree it's a freebie.
-                if (edge.second->hasParent() && edge.second->getParent()->getId() == edge.first->getId())
+                else if (edge.second->hasParent() && edge.second->getParent()->getId() == edge.first->getId())
                 {
                     if (!edge.first->isExpandedOnCurrentSearch())
                     {
