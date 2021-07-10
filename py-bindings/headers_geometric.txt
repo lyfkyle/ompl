@@ -38,4 +38,6 @@ src/ompl/geometric/planners/fmt/BFMT.h
 src/ompl/datastructures/NearestNeighbors.h
 src/ompl/datastructures/NearestNeighborsLinear.h
 src/ompl/geometric/planners/sst/SST.h
+src/ompl/geometric/planners/dofatt/BITstarDof.h
+src/ompl/geometric/planners/dofatt/RRTDof.h
 py-bindings/ompl_py_geometric.h
