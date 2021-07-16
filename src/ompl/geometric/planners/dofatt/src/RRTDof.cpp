@@ -132,7 +132,7 @@ ompl::base::PlannerStatus ompl::geometric::RRTDof::solve(const base::PlannerTerm
         if ((goal_s != nullptr) && rng_.uniform01() < goalBias_ && goal_s->canSample()) {
             goal_s->sampleGoal(rstate);
             toProject = false;
-        } 
+        }
         else {
             sampler_->sampleUniform(rstate);
             // Motion *nmotion = nn_->nearest(rmotion);
@@ -202,6 +202,11 @@ ompl::base::PlannerStatus ompl::geometric::RRTDof::solve(const base::PlannerTerm
                 approxdif = dist;
                 approxsol = nmotion;
             }
+
+            sampler_->sampleGaussian(dstate, NULL, sat ? 2 : 0);
+        }
+        else {
+            sampler_->sampleGaussian(dstate, NULL, 1);
         }
     }
 
