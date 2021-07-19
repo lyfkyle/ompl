@@ -195,6 +195,7 @@ ompl::base::PlannerStatus ompl::geometric::RRTDof::solve(const base::PlannerTerm
             {
                 approxdif = dist;
                 solution = nmotion;
+                sampler_->sampleGaussian(dstate, NULL, 2);
                 break;
             }
             if (dist < approxdif)
@@ -203,7 +204,7 @@ ompl::base::PlannerStatus ompl::geometric::RRTDof::solve(const base::PlannerTerm
                 approxsol = nmotion;
             }
 
-            sampler_->sampleGaussian(dstate, NULL, sat ? 2 : 0);
+            sampler_->sampleGaussian(dstate, NULL, 0);
         }
         else {
             sampler_->sampleGaussian(dstate, NULL, 1);
