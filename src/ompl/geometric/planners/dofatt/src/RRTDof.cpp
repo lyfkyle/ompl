@@ -146,7 +146,7 @@ ompl::base::PlannerStatus ompl::geometric::RRTDof::solve(const base::PlannerTerm
 
         // Project according to dof attention
         if (toProject) {
-            projectWithAtt(rstate, nmotion->state);
+            projectWithAtt(rstate, nmotion->state, toProject);
         }
         // projectWithAtt(rstate, nmotion->state);
         base::State *dstate = rstate;
@@ -273,8 +273,8 @@ void ompl::geometric::RRTDof::getPlannerData(base::PlannerData &data) const
     }
 }
 
-void ompl::geometric::RRTDof::projectWithAtt(ompl::base::State* pSampledState, const ompl::base::State* pNearState) {
-    sampler_->sampleUniformNear(pSampledState, pNearState, 0.0);
+void ompl::geometric::RRTDof::projectWithAtt(ompl::base::State* pSampledState, const ompl::base::State* pNearState, bool isGoal) {
+    sampler_->sampleUniformNear(pSampledState, pNearState, isGoal);
 }
 
 double ompl::geometric::RRTDof::distanceFunctionWithAtt(const Motion *a, const Motion *b) const {

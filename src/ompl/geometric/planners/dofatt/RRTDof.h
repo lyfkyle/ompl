@@ -196,7 +196,7 @@ namespace ompl
             /** \brief The most recent goal motion.  Used for PlannerData computation */
             Motion *lastGoalMotion_{nullptr};
 
-            void projectWithAtt(base::State* pSampledState, const base::State* pNearState);
+            void projectWithAtt(base::State* pSampledState, const base::State* pNearState, bool isGoal);
         };
     }
 }
