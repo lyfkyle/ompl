@@ -237,6 +237,8 @@ namespace ompl
             /** \brief Run the planner until \e ptc becomes true (at most) */
             virtual base::PlannerStatus solve(const base::PlannerTerminationCondition &ptc);
 
+            virtual base::PlannerStatus solve(double time, unsigned int max_iter);
+
             /** \brief Return the status of the last planning attempt */
             base::PlannerStatus getLastPlannerStatus() const
             {

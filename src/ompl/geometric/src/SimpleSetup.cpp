@@ -36,6 +36,7 @@
 
 #include "ompl/geometric/SimpleSetup.h"
 #include "ompl/tools/config/SelfConfig.h"
+#include "ompl/base/terminationconditions/IterationTerminationCondition.h"
 
 ompl::geometric::SimpleSetup::SimpleSetup(const base::SpaceInformationPtr &si)
   : configured_(false), planTime_(0.0), simplifyTime_(0.0), lastStatus_(base::PlannerStatus::UNKNOWN)
@@ -119,6 +120,35 @@ ompl::base::PlannerStatus ompl::geometric::SimpleSetup::solve(double time)
     lastStatus_ = base::PlannerStatus::UNKNOWN;
     time::point start = time::now();
     lastStatus_ = planner_->solve(time);
+    planTime_ = time::seconds(time::now() - start);
+    if (lastStatus_)
+        OMPL_INFORM("Solution found in %f seconds", planTime_);
+    else
+        OMPL_INFORM("No solution found after %f seconds", planTime_);
+    return lastStatus_;
+}
+
+ompl::base::PlannerStatus ompl::geometric::SimpleSetup::solve(double time, unsigned int max_iter)
+{
+    setup();
+    lastStatus_ = base::PlannerStatus::UNKNOWN;
+    time::point start = time::now();
+
+    if (time < 1.0) {
+        ompl::base::PlannerTerminationCondition time_term = ompl::base::timedPlannerTerminationCondition(time);
+        ompl::base::IterationTerminationCondition iter_term(max_iter);
+        ompl::base::PlannerTerminationCondition p_iter_term(iter_term);
+        ompl::base::PlannerTerminationCondition term = ompl::base::plannerOrTerminationCondition(time_term, p_iter_term);
+        lastStatus_ = planner_->solve(term);
+    }
+    else {
+        ompl::base::PlannerTerminationCondition time_term = ompl::base::timedPlannerTerminationCondition(time, std::min(time / 100.0, 0.1));
+        ompl::base::IterationTerminationCondition iter_term(max_iter);
+        ompl::base::PlannerTerminationCondition p_iter_term(iter_term);
+        ompl::base::PlannerTerminationCondition term = ompl::base::plannerOrTerminationCondition(time_term, p_iter_term);
+        lastStatus_ = planner_->solve(term);
+    }
+
     planTime_ = time::seconds(time::now() - start);
     if (lastStatus_)
         OMPL_INFORM("Solution found in %f seconds", planTime_);
