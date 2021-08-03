@@ -131,13 +131,13 @@ ompl::base::PlannerStatus ompl::geometric::RRTDof::solve(const base::PlannerTerm
         /* sample random state (with goal biasing) */
         if ((goal_s != nullptr) && rng_.uniform01() < goalBias_ && goal_s->canSample()) {
             goal_s->sampleGoal(rstate);
-            toProject = false;
+            toProject = true;
         }
         else {
             sampler_->sampleUniform(rstate);
             // Motion *nmotion = nn_->nearest(rmotion);
             // projectWithAtt(rstate, nmotion->state);
-            toProject = true;
+            toProject = false;
         }
 
         /* find closest state in the tree */
@@ -145,9 +145,8 @@ ompl::base::PlannerStatus ompl::geometric::RRTDof::solve(const base::PlannerTerm
         // base::State *dstate = rstate;
 
         // Project according to dof attention
-        if (toProject) {
-            projectWithAtt(rstate, nmotion->state, toProject);
-        }
+        projectWithAtt(rstate, nmotion->state, toProject);
+
         // projectWithAtt(rstate, nmotion->state);
         base::State *dstate = rstate;
 
