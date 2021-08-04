@@ -154,6 +154,7 @@ ompl::base::PlannerStatus ompl::geometric::RRTDof::solve(const base::PlannerTerm
         double d = si_->distance(nmotion->state, rstate);
         if (d > maxDistance_)
         {
+            OMPL_WARN("%s: max distance exceeded, interpolating", getName().c_str());
             si_->getStateSpace()->interpolate(nmotion->state, rstate, maxDistance_ / d, xstate);
             dstate = xstate;
         }
