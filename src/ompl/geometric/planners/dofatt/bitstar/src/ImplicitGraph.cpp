@@ -802,6 +802,7 @@ namespace ompl
                 this->testClosestToGoal(vertex);
             }
 
+            // make sure the original sample will no longer be projected again.
             if (projectMap_.find(vertex->getId()) != projectMap_.end()) {
                 // VertexPtr origVertexCopy(projectMap_[vertex->getId()]);
                 // std::cout << "haha: samples size: " << samples_->size() << std::endl;
@@ -1062,7 +1063,7 @@ namespace ompl
             VertexPtrVector samples;
             samples_->list(samples);
             projectedSamples_->clear();
-            
+
             // std::cout << "samples size " << samples_->size() << std::endl;
 
             for (auto sample : samples) {
@@ -1073,7 +1074,7 @@ namespace ompl
                     std::make_shared<Vertex>(spaceInformation_, costHelpPtr_, queuePtr_, approximationId_);
                 spaceInformation_->copyState(projectedSample->state(), sample->state());
                 sampler2_->sampleUniformNear(projectedSample->state(), vertex->state(), 0.0);
-                
+
                 projectMap_[projectedSample->getId()] = sample;
                 // std::cout << "projectedSample id : " << projectedSample->getId() << " orig sample id : " << sample->getId() << std::endl;
                 // Add to the vector of new samples
@@ -1083,7 +1084,7 @@ namespace ompl
                 projectedSamples_->add(projectedSample);
             }
             for (auto goalVertex : goalVertices_) {
-                projectedSamples_->add(goalVertex);   
+                projectedSamples_->add(goalVertex);
             }
 
             VertexPtrVector projectedSamples;

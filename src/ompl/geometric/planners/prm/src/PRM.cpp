@@ -47,6 +47,7 @@
 #include <boost/foreach.hpp>
 #include <thread>
 #include <typeinfo>
+#include <fstream>
 
 #include "GoalVisitor.hpp"
 
@@ -745,6 +746,11 @@ void ompl::geometric::PRM::getPlannerData(base::PlannerData &data) const
         data.tagState(stateProperty_[v1], const_cast<PRM *>(this)->disjointSets_.find_set(v1));
         data.tagState(stateProperty_[v2], const_cast<PRM *>(this)->disjointSets_.find_set(v2));
     }
+
+    std::ofstream myfile;
+    myfile.open("/home/adacomp/work/whole-body-motion-planning/src/lego/prm_graph.graphml");
+    data.printGraphML(myfile);
+    myfile.close();
 }
 
 ompl::base::Cost ompl::geometric::PRM::costHeuristic(Vertex u, Vertex v) const
