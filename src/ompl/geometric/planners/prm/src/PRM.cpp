@@ -748,7 +748,7 @@ void ompl::geometric::PRM::getPlannerData(base::PlannerData &data) const
     }
 
     std::ofstream myfile;
-    myfile.open("/home/adacomp/work/whole-body-motion-planning/src/lego/prm_graph.graphml");
+    myfile.open("/home/adacomp/work/whole-body-motion-planning/src/wbmp/lego/prm_graph.graphml");
     data.printGraphML(myfile);
     myfile.close();
 }
