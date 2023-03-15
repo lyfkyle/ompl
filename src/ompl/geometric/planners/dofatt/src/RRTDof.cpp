@@ -38,6 +38,7 @@
 #include <limits>
 #include "ompl/base/goals/GoalSampleableRegion.h"
 #include "ompl/tools/config/SelfConfig.h"
+#include <ompl/base/spaces/RealVectorStateSpace.h>
 
 ompl::geometric::RRTDof::RRTDof(const base::SpaceInformationPtr &si, bool addIntermediateStates)
   : base::Planner(si, addIntermediateStates ? "RRTDofintermediate" : "RRTDof")
@@ -100,159 +101,19 @@ ompl::base::PlannerStatus ompl::geometric::RRTDof::solve(const base::PlannerTerm
     base::Goal *goal = pdef_->getGoal().get();
     auto *goal_s = dynamic_cast<base::GoalSampleableRegion *>(goal);
 
-    while (const base::State *st = pis_.nextStart())
-    {
-        auto *motion = new Motion(si_);
-        si_->copyState(motion->state, st);
-        nn_->add(motion);
-    }
-
-    if (nn_->size() == 0)
-    {
-        OMPL_ERROR("%s: There are no valid initial states!", getName().c_str());
-        return base::PlannerStatus::INVALID_START;
-    }
-
     if (!sampler_)
         sampler_ = si_->allocStateSampler();
 
     OMPL_INFORM("%s: Starting planning with %u states already in datastructure", getName().c_str(), nn_->size());
 
-    Motion *solution = nullptr;
-    Motion *approxsol = nullptr;
-    double approxdif = std::numeric_limits<double>::infinity();
-    auto *rmotion = new Motion(si_);
-    base::State *rstate = rmotion->state;
-    base::State *xstate = si_->allocState();
-    bool isGoal = false;
+    std::cout << "!!here!!" << std::endl;
 
-    while (!ptc)
-    {
-        /* sample random state (with goal biasing) */
-        if ((goal_s != nullptr) && rng_.uniform01() < goalBias_ && goal_s->canSample()) {
-            goal_s->sampleGoal(rstate);
-            isGoal = true;
-        }
-        else {
-            sampler_->sampleUniform(rstate);
-            // Motion *nmotion = nn_->nearest(rmotion);
-            // projectWithAtt(rstate, nmotion->state);
-            isGoal = false;
-        }
+    base::State *rstate = si_->allocState();
+    sampler_->sampleUniformNear(rstate, NULL, 0);
+    auto state = rstate->as<base::RealVectorStateSpace::StateType>();
+    bool solved = (state->values[0] > 0) ? true : false;
 
-        /* find closest state in the tree */
-        Motion *nmotion = nn_->nearest(rmotion);
-        // base::State *dstate = rstate;
-
-        // Project according to dof attention
-        if (!isGoal) {
-            projectWithAtt(rstate, nmotion->state, isGoal);
-        }
-
-        // projectWithAtt(rstate, nmotion->state);
-        base::State *dstate = rstate;
-
-        /* find state to add */
-        double d = si_->distance(nmotion->state, rstate);
-        if (d > maxDistance_)
-        {
-            OMPL_WARN("%s: max distance exceeded, interpolating", getName().c_str());
-            si_->getStateSpace()->interpolate(nmotion->state, rstate, maxDistance_ / d, xstate);
-            dstate = xstate;
-        }
-
-        if (si_->checkMotion(nmotion->state, dstate))
-        {
-            if (addIntermediateStates_)
-            {
-                std::vector<base::State *> states;
-                const unsigned int count = si_->getStateSpace()->validSegmentCount(nmotion->state, dstate);
-
-                if (si_->getMotionStates(nmotion->state, dstate, states, count, true, true))
-                    si_->freeState(states[0]);
-
-                for (std::size_t i = 1; i < states.size(); ++i)
-                {
-                    auto *motion = new Motion;
-                    motion->state = states[i];
-                    motion->parent = nmotion;
-                    nn_->add(motion);
-
-                    nmotion = motion;
-                }
-            }
-            else
-            {
-                auto *motion = new Motion(si_);
-                si_->copyState(motion->state, dstate);
-                motion->parent = nmotion;
-                nn_->add(motion);
-
-                nmotion = motion;
-            }
-
-            double dist = 0.0;
-            bool sat = goal->isSatisfied(nmotion->state, &dist);
-            if (sat)
-            {
-                approxdif = dist;
-                solution = nmotion;
-                sampler_->sampleGaussian(dstate, NULL, 2);
-                break;
-            }
-            if (dist < approxdif)
-            {
-                approxdif = dist;
-                approxsol = nmotion;
-            }
-
-            sampler_->sampleGaussian(dstate, NULL, 0);
-        }
-        else {
-            sampler_->sampleGaussian(dstate, NULL, 1);
-        }
-    }
-
-    bool solved = false;
-    bool approximate = false;
-    if (solution == nullptr)
-    {
-        solution = approxsol;
-        approximate = true;
-    }
-
-    if (solution != nullptr)
-    {
-        lastGoalMotion_ = solution;
-
-        /* construct the solution path */
-        std::vector<Motion *> mpath;
-        while (solution != nullptr)
-        {
-            mpath.push_back(solution);
-            solution = solution->parent;
-        }
-
-        /* set the solution path */
-        auto path(std::make_shared<PathGeometric>(si_));
-        for (int i = mpath.size() - 1; i >= 0; --i)
-            path->append(mpath[i]->state);
-        pdef_->addSolutionPath(path, approximate, approxdif, getName());
-        solved = true;
-    }
-
-    // base::PlannerData data(si_);
-    // getPlannerData(data);
-    // data.printGraphviz();
-
-    si_->freeState(xstate);
-    if (rmotion->state != nullptr)
-        si_->freeState(rmotion->state);
-    delete rmotion;
-
-    OMPL_INFORM("%s: Created %u states", getName().c_str(), nn_->size());
-
-    return {solved, approximate};
+    return {solved, false};
 }
 
 void ompl::geometric::RRTDof::getPlannerData(base::PlannerData &data) const
@@ -287,3 +148,24 @@ double ompl::geometric::RRTDof::distanceFunctionWithAtt(const Motion *a, const M
     delete pMotion;
     return dist;
 }
+
+// torch::tensor ompl::geometric::RRTDof::getLocalOccGrid(const vector<float>& state) {
+//     idx_x = round(base_x / small_occ_grid_resolution)
+//     idx_y = round(base_y / small_occ_grid_resolution)
+
+//     min_y = max(0, idx_y - small_occ_grid_size)
+//     max_y = min(self.occ_grid.shape[1], idx_y + small_occ_grid_size)
+//     min_x = max(0, idx_x - small_occ_grid_size)
+//     max_x = min(self.occ_grid.shape[0], idx_x + small_occ_grid_size)
+
+//     min_y_1 = 0 if min_y != 0 else small_occ_grid_size - idx_y
+//     max_y_1 = 2 * small_occ_grid_size if max_y != self.occ_grid.shape[1] else self.occ_grid.shape[1] - idx_y + small_occ_grid_size
+//     min_x_1 = 0 if min_x != 0 else small_occ_grid_size - idx_x
+//     max_x_1 = 2 * small_occ_grid_size if max_x != self.occ_grid.shape[0] else self.occ_grid.shape[0] - idx_x + small_occ_grid_size
+
+//     # print(state, idx_x, min_x, max_x, min_x_1, max_x_1)
+//     # print(state, idx_y, min_y, max_y, min_y_1, max_y_1)
+
+//     local_occ_grid = np.ones((2*small_occ_grid_size, 2*small_occ_grid_size, self.occ_grid.shape[2]), dtype=np.uint8)
+//     local_occ_grid[min_x_1:max_x_1, min_y_1:max_y_1] = self.occ_grid[min_x:max_x, min_y:max_y]
+// }
