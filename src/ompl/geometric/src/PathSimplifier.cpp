@@ -79,6 +79,7 @@ void ompl::geometric::PathSimplifier::freeStates(bool flag)
 /* Based on COMP450 2010 project of Yun Yu and Linda Hill (Rice University) */
 void ompl::geometric::PathSimplifier::smoothBSpline(PathGeometric &path, unsigned int maxSteps, double minChange)
 {
+    OMPL_INFORM("smoothBSpline");
     if (path.getStateCount() < 3)
         return;
 
@@ -124,6 +125,7 @@ void ompl::geometric::PathSimplifier::smoothBSpline(PathGeometric &path, unsigne
 bool ompl::geometric::PathSimplifier::reduceVertices(PathGeometric &path, unsigned int maxSteps,
                                                      unsigned int maxEmptySteps, double rangeRatio)
 {
+    OMPL_INFORM("reduceVertices");
     if (path.getStateCount() < 3)
         return false;
 
@@ -187,6 +189,7 @@ bool ompl::geometric::PathSimplifier::reduceVertices(PathGeometric &path, unsign
 bool ompl::geometric::PathSimplifier::shortcutPath(PathGeometric &path, unsigned int maxSteps,
                                                    unsigned int maxEmptySteps, double rangeRatio, double snapToVertex)
 {
+    OMPL_INFORM("shortcutPath");
     if (path.getStateCount() < 3)
         return false;
 
@@ -380,12 +383,14 @@ bool ompl::geometric::PathSimplifier::shortcutPath(PathGeometric &path, unsigned
 
     si->freeState(temp1);
     si->freeState(temp0);
+    OMPL_INFORM("shortcutPath return");
     return result;
 }
 
 bool ompl::geometric::PathSimplifier::perturbPath(PathGeometric &path, double stepSize, unsigned int maxSteps,
                                                   unsigned int maxEmptySteps, double snapToVertex)
 {
+    OMPL_INFORM("perturbPath");
     if (maxSteps == 0)
         maxSteps = path.getStateCount();
 
@@ -605,6 +610,7 @@ bool ompl::geometric::PathSimplifier::perturbPath(PathGeometric &path, double st
 bool ompl::geometric::PathSimplifier::collapseCloseVertices(PathGeometric &path, unsigned int maxSteps,
                                                             unsigned int maxEmptySteps)
 {
+    OMPL_INFORM("collapseCloseVertices");
     if (path.getStateCount() < 3)
         return false;
 
@@ -691,15 +697,15 @@ bool ompl::geometric::PathSimplifier::simplify(PathGeometric &path, const base::
             do
             {
                 bool shortcut = shortcutPath(path);  // split path segments, not just vertices
-                bool better_goal =
-                    gsr_ ? findBetterGoal(path, ptc) : false;  // Try to connect the path to a closer goal
+                bool better_goal = false;
+                    // gsr_ ? findBetterGoal(path, ptc) : false;  // Try to connect the path to a closer goal
 
                 metricTryMore = shortcut || better_goal;
             } while ((ptc == false || atLeastOnce) && ++times <= 5 && metricTryMore);
 
             // smooth the path with BSpline interpolation
-            if (ptc == false || atLeastOnce)
-                smoothBSpline(path, 3, path.length() / 100.0);
+            // if (ptc == false || atLeastOnce)
+            //     smoothBSpline(path, 3, path.length() / 100.0);
 
             if (ptc == false || atLeastOnce)
             {
@@ -761,6 +767,7 @@ bool ompl::geometric::PathSimplifier::findBetterGoal(PathGeometric &path, const 
                                                      unsigned int samplingAttempts, double rangeRatio,
                                                      double snapToVertex)
 {
+    OMPL_INFORM("findBetterGoal");
     if (path.getStateCount() < 2)
         return false;
 
@@ -911,6 +918,7 @@ int ompl::geometric::PathSimplifier::selectAlongPath(std::vector<double> dists, 
                                                      double distTo, double threshold, base::State *select_state,
                                                      int &pos)
 {
+    OMPL_INFORM("selectAlongPath");
     if (distTo < 0)
         distTo = 0;
     else if (distTo > dists.back())
