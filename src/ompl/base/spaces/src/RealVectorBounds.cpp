@@ -38,6 +38,7 @@
 #include "ompl/util/Exception.h"
 #include <algorithm>
 #include <limits>
+#include <iostream>
 
 void ompl::base::RealVectorBounds::setLow(double value)
 {
@@ -91,7 +92,9 @@ void ompl::base::RealVectorBounds::check() const
     if (low.size() != high.size())
         throw Exception("Lower and upper bounds are not of same dimension");
     for (unsigned int i = 0; i < low.size(); ++i)
-        if (low[i] > high[i])
+        if (low[i] > high[i]) {
+            // std::cout << i << " " << low[i] << " " << high[i] << std::endl;
             throw Exception("Bounds for real vector space seem to be incorrect (lower bound must be stricly less than "
                             "upper bound). Sampling will not be possible");
+        }
 }

@@ -258,20 +258,20 @@ std::pair<bool, bool> ompl::geometric::PathGeometric::checkAndRepair(unsigned in
 
             bool success = false;
 
-            for (unsigned int a = 0; a < attempts; ++a)
-                if (uvss->sampleNear(states_[i], temp, radius))
-                {
-                    if (si_->checkMotion(states_[i - 1], states_[i]) &&
-                        // the penultimate state needs an additional check
-                        // (see comment at the top of outermost for-loop)
-                        (i < n1 - 1 || si_->checkMotion(states_[i], states_[i + 1])))
-                    {
-                        success = true;
-                        break;
-                    }
-                }
-                else
-                    break;
+            // for (unsigned int a = 0; a < attempts; ++a)
+            //     if (uvss->sampleNear(states_[i], temp, radius))
+            //     {
+            //         if (si_->checkMotion(states_[i - 1], states_[i]) &&
+            //             // the penultimate state needs an additional check
+            //             // (see comment at the top of outermost for-loop)
+            //             (i < n1 - 1 || si_->checkMotion(states_[i], states_[i + 1])))
+            //         {
+            //             success = true;
+            //             break;
+            //         }
+            //     }
+            //     else
+            //         break;
             if (!success)
             {
                 result = false;

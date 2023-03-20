@@ -84,17 +84,17 @@ void ompl::base::RealVectorStateSampler::sampleGaussian(State *state, const Stat
 
 void ompl::base::RealVectorStateSpace::registerProjections()
 {
-    // compute a default random projection
-    if (dimension_ > 0)
-    {
-        if (dimension_ > 2)
-        {
-            int p = std::max(2, (int)ceil(log((double)dimension_)));
-            registerDefaultProjection(std::make_shared<RealVectorRandomLinearProjectionEvaluator>(this, p));
-        }
-        else
-            registerDefaultProjection(std::make_shared<RealVectorIdentityProjectionEvaluator>(this));
-    }
+    // // compute a default random projection
+    // if (dimension_ > 0)
+    // {
+    //     if (dimension_ > 2)
+    //     {
+    //         int p = std::max(2, (int)ceil(log((double)dimension_)));
+    //         registerDefaultProjection(std::make_shared<RealVectorRandomLinearProjectionEvaluator>(this, p));
+    //     }
+    //     else
+    //         registerDefaultProjection(std::make_shared<RealVectorIdentityProjectionEvaluator>(this));
+    // }
 }
 
 void ompl::base::RealVectorStateSpace::setup()

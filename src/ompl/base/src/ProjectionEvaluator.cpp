@@ -181,6 +181,7 @@ void ompl::base::ProjectionEvaluator::checkCellSizes() const
 
 void ompl::base::ProjectionEvaluator::checkBounds() const
 {
+    // std::cout << "checkbounds " << bounds_.high[0] << " " << bounds_.low[0] << std::endl;
     bounds_.check();
     if (hasBounds() && bounds_.low.size() != getDimension())
         throw Exception("Number of dimensions in projection space does not match dimension of bounds");
@@ -262,6 +263,7 @@ void ompl::base::ProjectionEvaluator::inferCellSizes()
     for (unsigned int j = 0; j < dim; ++j)
     {
         cellSizes_[j] = (bounds_.high[j] - bounds_.low[j]) / magic::PROJECTION_DIMENSION_SPLITS;
+        // std::cout << j << " " << bounds_.high[j] << " " << bounds_.low[j] << std::endl;
         if (cellSizes_[j] < std::numeric_limits<double>::epsilon())
         {
             cellSizes_[j] = 1.0;
@@ -274,6 +276,8 @@ void ompl::base::ProjectionEvaluator::inferCellSizes()
 
 void ompl::base::ProjectionEvaluator::setup()
 {
+    // std::cout << " " << bounds_.high[0] << " " << bounds_.low[0] << std::endl;
+
     if (defaultCellSizes_)
         defaultCellSizes();
 
